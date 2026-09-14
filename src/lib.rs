@@ -11,7 +11,7 @@
 //! a `%` not followed by two hex digits, at that byte, because nothing can
 //! be decoded past it.
 
-use message::{Part, Shape, ShapeError, Shaped};
+use message::{Part, Shape, ShapeError, Shaped, Stop};
 use stream::Stream;
 
 /// The form-urlencoded shape.
@@ -34,7 +34,7 @@ fn looks_encoded(bytes: &[u8]) -> bool {
 
 /// `text` percent-decoded with `+` as a space; the offset of a `%` that
 /// two hex digits do not follow.
-fn decode(text: &[u8], offset: usize) -> Result<Vec<u8>, (&'static str, usize)> {
+fn decode(text: &[u8], offset: usize) -> Result<Vec<u8>, Stop> {
     let mut decoded = Vec::with_capacity(text.len());
     let mut at = 0;
     while at < text.len() {
@@ -57,7 +57,7 @@ fn decode(text: &[u8], offset: usize) -> Result<Vec<u8>, (&'static str, usize)> 
 }
 
 /// One part per pair.
-fn pairs(bytes: &[u8]) -> Result<Vec<Part>, (&'static str, usize)> {
+fn pairs(bytes: &[u8]) -> Result<Vec<Part>, Stop> {
     let mut parts = Vec::new();
     let mut offset = 0;
     for pair in bytes.split(|b| *b == b'&') {
@@ -89,8 +89,8 @@ impl Shape for FormUrlencoded {
     }
 
     fn shape(&self, stream: &Stream) -> Result<Shaped, ShapeError> {
-        let parts = pairs(stream.bytes())
-            .map_err(|(reason, at)| ShapeError::new("form-urlencoded", reason).at(at))?;
+        let parts =
+            pairs(stream.bytes()).map_err(|stop| ShapeError::refused("form-urlencoded", stop))?;
         Ok(Shaped {
             parts,
             message_type: None,
