@@ -34,26 +34,18 @@ fn looks_encoded(bytes: &[u8]) -> bool {
 
 /// `text` percent-decoded with `+` as a space; the offset of a `%` that
 /// two hex digits do not follow.
+///
+/// The `+` is the form's rule and is read here; the escapes are RFC 3986's
+/// and are read by `net::percent`, strictly. A `+` becomes a space before
+/// the escapes are read, which is the same thing: an escaped `%2B` is not
+/// a `+` until it is decoded.
 fn decode(text: &[u8], offset: usize) -> Result<Vec<u8>, Stop> {
-    let mut decoded = Vec::with_capacity(text.len());
-    let mut at = 0;
-    while at < text.len() {
-        match text[at] {
-            b'+' => decoded.push(b' '),
-            b'%' => {
-                let hex = text
-                    .get(at + 1..at + 3)
-                    .and_then(|hex| std::str::from_utf8(hex).ok())
-                    .and_then(|hex| u8::from_str_radix(hex, 16).ok())
-                    .ok_or(("a % without two hex digits", offset + at))?;
-                decoded.push(hex);
-                at += 2;
-            }
-            byte => decoded.push(byte),
-        }
-        at += 1;
-    }
-    Ok(decoded)
+    let spaced: Vec<u8> = text
+        .iter()
+        .map(|byte| if *byte == b'+' { b' ' } else { *byte })
+        .collect();
+    net::percent::decode_strict(&spaced)
+        .map_err(|broken| ("a % without two hex digits", offset + broken.at))
 }
 
 /// One part per pair.
