@@ -123,12 +123,12 @@ mod tests {
         assert_eq!(shaped.parts[4].bytes, b"2");
         assert!(shaped.parts.iter().all(|p| p.media_type.is_none()));
         assert_eq!(shaped.message_type, None);
-        assert!(
+        assert_eq!(
             FormUrlencoded
                 .shape(&stream(b"", None))
                 .expect("empty")
-                .parts
-                .is_empty()
+                .parts,
+            Vec::<Part>::new()
         );
     }
 
