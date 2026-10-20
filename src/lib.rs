@@ -76,7 +76,7 @@ impl Shape for FormUrlencoded {
         &["application/x-www-form-urlencoded"]
     }
 
-    fn recognises(&self, bytes: &[u8]) -> bool {
+    fn recognizes(&self, bytes: &[u8]) -> bool {
         looks_encoded(bytes)
     }
 
@@ -149,19 +149,19 @@ mod tests {
     }
 
     #[test]
-    fn the_shape_claims_the_form_type_and_recognises_ascii_pairs_without_whitespace() {
+    fn the_shape_claims_the_form_type_and_recognizes_ascii_pairs_without_whitespace() {
         assert_eq!(FormUrlencoded.technology(), "form-urlencoded");
         assert_eq!(
             FormUrlencoded.media_types(),
             &["application/x-www-form-urlencoded"]
         );
-        assert!(FormUrlencoded.recognises(b"a=1&b=two+words%21"));
-        assert!(FormUrlencoded.recognises(b"a="));
-        assert!(!FormUrlencoded.recognises(b"a=1&b"));
-        assert!(!FormUrlencoded.recognises(b"a=1 &b=2"));
-        assert!(!FormUrlencoded.recognises(b"{\"a\":1}"));
-        assert!(!FormUrlencoded.recognises("a=é".as_bytes()));
-        assert!(!FormUrlencoded.recognises(b""));
+        assert!(FormUrlencoded.recognizes(b"a=1&b=two+words%21"));
+        assert!(FormUrlencoded.recognizes(b"a="));
+        assert!(!FormUrlencoded.recognizes(b"a=1&b"));
+        assert!(!FormUrlencoded.recognizes(b"a=1 &b=2"));
+        assert!(!FormUrlencoded.recognizes(b"{\"a\":1}"));
+        assert!(!FormUrlencoded.recognizes("a=é".as_bytes()));
+        assert!(!FormUrlencoded.recognizes(b""));
     }
 
     #[test]
