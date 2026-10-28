@@ -36,7 +36,7 @@ fn looks_encoded(bytes: &[u8]) -> bool {
 /// two hex digits do not follow.
 ///
 /// The `+` is the form's rule and is read here; the escapes are RFC 3986's
-/// and are read by `net::percent`, strictly. A `+` becomes a space before
+/// and are read by `codec::percent`, strictly. A `+` becomes a space before
 /// the escapes are read, which is the same thing: an escaped `%2B` is not
 /// a `+` until it is decoded.
 fn decode(text: &[u8], offset: usize) -> Result<Vec<u8>, Stop> {
@@ -44,7 +44,7 @@ fn decode(text: &[u8], offset: usize) -> Result<Vec<u8>, Stop> {
         .iter()
         .map(|byte| if *byte == b'+' { b' ' } else { *byte })
         .collect();
-    net::percent::decode_strict(&spaced)
+    codec::percent::decode_strict(&spaced)
         .map_err(|broken| ("a % without two hex digits", offset + broken.at))
 }
 
