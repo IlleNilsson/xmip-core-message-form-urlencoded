@@ -58,7 +58,7 @@ fn pairs(bytes: &[u8]) -> Result<Vec<Part>, Stop> {
                 .iter()
                 .position(|b| *b == b'=')
                 .map_or((pair, &b""[..]), |eq| (&pair[..eq], &pair[eq + 1..]));
-            let name = String::from_utf8_lossy(&decode(key, offset)?).into_owned();
+            let name = String::from_utf8_lossy_owned(decode(key, offset)?);
             let value = decode(value, offset + key.len() + 1)?;
             parts.push(Part::new(Some(name), value, None));
         }
