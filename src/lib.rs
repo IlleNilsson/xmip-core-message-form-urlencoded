@@ -35,16 +35,10 @@ fn looks_encoded(bytes: &[u8]) -> bool {
 /// `text` percent-decoded with `+` as a space; the offset of a `%` that
 /// two hex digits do not follow.
 ///
-/// The `+` is the form's rule and is read here; the escapes are RFC 3986's
-/// and are read by `codec::percent`, strictly. A `+` becomes a space before
-/// the escapes are read, which is the same thing: an escaped `%2B` is not
-/// a `+` until it is decoded.
+/// The estate's one form decoder, `codec::percent::decode_form_strict`:
+/// a `+` is a space, an escaped `%2B` a `+`.
 fn decode(text: &[u8], offset: usize) -> Result<Vec<u8>, Stop> {
-    let spaced: Vec<u8> = text
-        .iter()
-        .map(|byte| if *byte == b'+' { b' ' } else { *byte })
-        .collect();
-    codec::percent::decode_strict(&spaced)
+    codec::percent::decode_form_strict(text)
         .map_err(|broken| ("a % without two hex digits", offset + broken.at))
 }
 
