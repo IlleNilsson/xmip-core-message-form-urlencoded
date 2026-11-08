@@ -75,8 +75,8 @@ impl Shape for FormUrlencoded {
     }
 
     fn shape(&self, stream: &Stream) -> Result<Shaped, ShapeError> {
-        let parts =
-            pairs(stream.bytes()).map_err(|stop| ShapeError::refused("form-urlencoded", stop))?;
+        let bytes = message::loaded(self.technology(), stream)?;
+        let parts = pairs(bytes).map_err(|stop| ShapeError::refused("form-urlencoded", stop))?;
         Ok(Shaped {
             parts,
             message_type: None,
@@ -162,10 +162,14 @@ mod tests {
     fn choose_picks_the_form_by_media_type_and_by_look() {
         let shapes: [&dyn Shape; 1] = [&FormUrlencoded];
         let media = Some("application/x-www-form-urlencoded; charset=utf-8");
-        let by_media = message::choose(&shapes, &stream(b"plain words", media));
+        let by_media = message::choose(&shapes, &stream(b"plain words", media)).expect("held");
         assert_eq!(by_media.map(Shape::technology), Some("form-urlencoded"));
-        let by_look = message::choose(&shapes, &stream(b"a=1&b=2", None));
+        let by_look = message::choose(&shapes, &stream(b"a=1&b=2", None)).expect("held");
         assert_eq!(by_look.map(Shape::technology), Some("form-urlencoded"));
-        assert!(message::choose(&shapes, &stream(b"plain words", None)).is_none());
+        assert!(
+            message::choose(&shapes, &stream(b"plain words", None))
+                .expect("held")
+                .is_none()
+        );
     }
 }
